@@ -6,7 +6,9 @@ const { authentication } = require('../middlewares/authentication')
 
 router.post('/', authentication ,PostController.create)
 router.post ('/:_id', authentication,PostController.update)
+router.put ('/comments/:_id', authentication, PostController.insertComment)
 router.delete ('/:_id', authentication,PostController.delete)
+
 
 router.get ('/', PostController.getAllPages)
 router.get ('/name/:name', PostController.getPostsByName)

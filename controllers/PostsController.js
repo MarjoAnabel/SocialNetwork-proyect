@@ -3,11 +3,11 @@ const Post = require('../models/Post')
 const PostController = {
   
  async create(req, res) {
-  const { name} = req.body;
-      if (!name) {
+  const { post} = req.body;
+      if (!post) {
           return res.status(400).send('Error: Falta algún campo por rellenar');
       }
-      req.body.role = 'product';
+      req.body.role = 'post';
    try {
      const post = await Post.create(req.body)
      res.status(201).send(post)
@@ -31,6 +31,20 @@ const PostController = {
     console.error(error)
   }
 },
+
+async insertComment(req, res) {
+  try {
+    const post = await Post.findByIdAndUpdate(
+      req.params._id,
+      {$push: { comments: { comment: req.body.comment, userId: req.user._id }},
+      }, { new: true })
+    res.send(post)
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({ message: 'Hubo un problema con el Post' })
+  }
+},
+
 
 async delete(req, res) {
   try {
@@ -76,16 +90,6 @@ async getById(req, res) {
   }
 },
 
-
-
-
-
-
-
 }
-
-
-
-
 
 module.exports = PostController
