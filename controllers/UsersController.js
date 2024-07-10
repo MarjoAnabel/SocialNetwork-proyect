@@ -4,25 +4,21 @@ const bcryptj = require('bcryptjs')
 const { jwt_secret } = require('../config/keys.js')
 
 const UserController = {
-  async register(req, res) {
+  async register(req, res, next) {
     try {
-      const { name, email, password, age } = req.body;
-      if (!name || !email || !password || !age) {
-          return res.status(400).send('Error: Falta algún campo por rellenar');
-      }
-      const passwordHash = await bcryptj.hash(password, 10);
+      const passwordHash = await bcryptj.hash(req.body.password, 10);
       const user = await User.create({
-          ...req.body,
-          password: passwordHash,
-          role: 'user',
+        ...req.body,
+        role: 'user',
+        password: passwordHash,
       });
-
       res.status(201).send({ message: 'Usuario registrado con éxito', user });
-  } catch (error) {
-      console.error(error);
-      res.status(500).send('Error: Ha ocurrido un error al registrar el usuario');
-  }
-},
+    } catch (error) {
+      error.origin = 'usuario'
+      next(error)
+    }
+  },
+
 
  async login(req, res) {
   try {
@@ -49,11 +45,72 @@ const UserController = {
 async getInfo(req, res) {
   try {
     const user = await User.findById(req.user._id)
+    .populate({
+      path: "postIds",
+      populate: {
+        path: "commentIds",
+      },
+    })
+
+    .populate ('wishlist')
     res.send(user)
   } catch (error) {
     console.error(error)
   }
 },
+
+async update(req, res) {
+  try {
+    if (req.body.password) {
+      const passwordHash = await bcrypt.hashSync(req.body.password, 10)
+      req.body.password = passwordHash
+    }
+    const user = await User.findByIdAndUpdate(
+      req.params._id,
+      req.body,
+      { new: true }
+    )
+    if (!user) {
+      return res.status(404).send({ message: 'Usuario no encontrado' })
+    }
+    res.send({ message: 'Usuario actualizado con éxito', user })
+  } catch (error) {
+    error.origin = usuario
+    next(error)
+  }
+},
+
+async getUsersByName(req, res) {
+  try {
+    const name = new RegExp(req.params.name, 'i')
+    const users = await User.find({ name })
+    res.send(users)
+  } catch (error) {
+    console.log(error)
+  }
+},
+
+async getById(req, res) {
+  try {
+    const user = await User.findById(req.params._id)
+    res.send(user)
+  } catch (error) {
+    console.error(error)
+  }
+},
+
+async like(req, res) {
+  try {
+  await User.findByIdAndUpdate(req.user._id,
+    { $push: { wishList: req.params._id } },
+    { new: true })
+     res.send(product)
+   } catch (error) {
+     console.error(error)
+     res.status(500).send({ message: "Hubo un problema con la solicitud" })
+   }
+ },
+
 
 async logout(req, res) {
   try {

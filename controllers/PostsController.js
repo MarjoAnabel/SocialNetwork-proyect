@@ -9,7 +9,7 @@ const PostController = {
       }
       req.body.role = 'post';
    try {
-     const post = await Post.create(req.body)
+     const post = await Post.create(req.body, req.user._id)
      res.status(201).send(post)
    } catch (error) {
      console.error(error)
@@ -44,6 +44,31 @@ async insertComment(req, res) {
     res.status(500).send({ message: 'Hubo un problema con el Post' })
   }
 },
+
+async like(req, res) {
+  try {
+    const post = await Post.findByIdAndUpdate(
+    req.params._id, { $push: { likes: req.user._id } },{ new: true })
+    res.send(post)
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({ message: "There was a problem with your request" })
+    }
+  },
+
+  async deletelikes(req, res) {
+    try {
+      const post = await Post.findByIdAndDelete(
+        req.params._id, { $push: { likes: req.user._id }})
+      res.send({ post, message: 'Like eliminado' })
+    } catch (error) {
+      console.error(error)
+      res.status(500).send({
+          message: 'Hubo un problema al eliminar el post',
+        })
+    }
+  },
+
 
 
 async delete(req, res) {

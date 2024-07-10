@@ -26,6 +26,32 @@ const CommentController = {
   }
 },
 
+async update(req, res) {
+  try {
+    const comment = await Post.findByIdAndUpdate(
+      req.params._id,
+      req.body,
+      { new: true }
+    )
+    res.send({ message: 'Comentario actualizada correctamente', comment })
+  } catch (error) {
+    console.error(error)
+  }
+},
+
+
+async delete(req, res) {
+  try {
+    const comment = await Comment.findByIdAndDelete(req.params._id)
+    res.send({ comment, message: 'Comentario eliminado' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).send({
+        message: 'Hubo un problema al eliminar el comentario',
+      })
+  }
+},
+
 
 }
 module.exports = CommentController
