@@ -3,11 +3,8 @@ const ObjectId = mongoose.SchemaTypes.ObjectId
 
 const PostSchema = new mongoose.Schema(
  {
-   post: String,
-   userId: {
-     type: ObjectId,
-     ref: 'User',
-   },
+   namepost: String,
+   userId: { type: ObjectId,ref: 'User',},
 
    comments: [
     {

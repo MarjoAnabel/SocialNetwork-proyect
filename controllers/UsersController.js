@@ -1,5 +1,6 @@
 const User = require('../models/User.js')
 const jwt = require('jsonwebtoken')
+const transporter = require ('../config/nodemailer')
 const bcryptj = require('bcryptjs')
 const { jwt_secret } = require('../config/keys.js')
 
@@ -11,13 +12,44 @@ const UserController = {
         ...req.body,
         role: 'user',
         password: passwordHash,
+        confirmed: false,
       });
+      const emailToken = jwt.sign({ email: req.body.email }, jwt_secret, { expiresIn: '48h' })
+    const url = 'http://localhost:3000/users/confirm/' + req.body.email
+      await transporter.sendMail({
+        to: req.body.email,
+        subject: 'Confirme su registro',
+        html: `
+          <h3>Bienvenido, estás a un paso de registrarte </h3>
+          <a href=${url} Click para confirmar tu registro</a>
+        `,
+      })
+ 
       res.status(201).send({ message: 'Usuario registrado con éxito', user });
     } catch (error) {
       error.origin = 'usuario'
       next(error)
     }
   },
+
+  async confirm(req, res) {
+    try {
+      const token = req.params.emailToken
+      const payload = jwt.verify(token, jwt_secret) 
+      await User.update(
+        { confirmed: true },
+        {
+          where: {
+            email: payload.email,
+          },
+        }
+      )
+      res.status(201).send('Usuario confirmado con éxito')
+    } catch (error) {
+      console.error(error)
+    }
+  },
+ 
 
 
  async login(req, res) {
@@ -31,6 +63,10 @@ const UserController = {
     if (!isPasswordValid) {
         return res.status(400).send('Error: Contraseña incorrecta');
     }
+    if (!user.confirmed) {
+      return res.status(400).send({ message: 'Debes confirmar tu correo' })
+    }
+
     const token = jwt.sign({ _id: user._id }, jwt_secret);
     if (user.tokens.length > 4) user.tokens.shift();
     user.tokens.push(token);

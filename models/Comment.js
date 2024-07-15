@@ -11,6 +11,7 @@ const CommentSchema = new mongoose.Schema(
     comment: String,
     },
    ],
+   likes: [{type:ObjectId}],
  },
  { timestamps: true }
 )

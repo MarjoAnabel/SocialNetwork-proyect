@@ -3,13 +3,13 @@ const Post = require('../models/Post')
 const PostController = {
   
  async create(req, res) {
-  const { post} = req.body;
-      if (!post) {
+  const { namepost} = req.body;
+      if (!namepost) {
           return res.status(400).send('Error: Falta algún campo por rellenar');
       }
       req.body.role = 'post';
    try {
-     const post = await Post.create(req.body, req.user._id)
+     const post = await Post.create({ namepost , userId: req.user._id})
      res.status(201).send(post)
    } catch (error) {
      console.error(error)
@@ -58,17 +58,23 @@ async like(req, res) {
 
   async deletelikes(req, res) {
     try {
-      const post = await Post.findByIdAndDelete(
-        req.params._id, { $push: { likes: req.user._id }})
-      res.send({ post, message: 'Like eliminado' })
+      const post = await Post.findByIdAndUpdate(
+        req.params._id,
+        { $pull: { likes: req.user._id }}, // Usar $pull para eliminar el like
+        { new: true } // Para devolver el documento actualizado
+      );
+      if (!post) {
+        return res.status(404).send({ message: 'Post no encontrado' });
+      }
+      res.send({ post, message: 'Like eliminado' });
     } catch (error) {
-      console.error(error)
+      console.error(error);
       res.status(500).send({
-          message: 'Hubo un problema al eliminar el post',
-        })
+        message: 'Hubo un problema al eliminar el like',
+      });
     }
   },
-
+  
 
 
 async delete(req, res) {
@@ -83,16 +89,24 @@ async delete(req, res) {
   }
 },
 
- async getAllPages(req, res) {
+
+async getAllPages(req, res) {
   try {
-    const { page = 1, limit = 10 } = req.query
+    const { page = 1, limit = 10 } = req.query;
     const posts = await Post.find()
-      .populate ('comments.userId')
+      // Populate post author (userId)
+      .populate({ path: 'userId', select: 'name + email' })
+      // Populate comments with username from userId
+      .populate({
+        path: 'comments',
+        populate: { path: 'userId', select: 'name + email' },
+      })
       .limit(limit)
-      .skip((page - 1) * limit)
-    res.send(posts)
+      .skip((page - 1) * limit);
+    res.send(posts);
   } catch (error) {
-    console.error(error)
+    console.error(error);
+    res.status(400).send({ message: 'Problema al mostrar los posts' });
   }
 },
 
