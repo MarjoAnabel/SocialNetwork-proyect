@@ -15,7 +15,7 @@ const UserController = {
         confirmed: false,
       });
       const emailToken = jwt.sign({ email: req.body.email }, jwt_secret, { expiresIn: '48h' })
-    const url = 'http://localhost:3000/users/confirm/' + req.body.email
+      const url = `http://localhost:3001/users/confirm/${emailToken}`
       await transporter.sendMail({
         to: req.body.email,
         subject: 'Confirme su registro',

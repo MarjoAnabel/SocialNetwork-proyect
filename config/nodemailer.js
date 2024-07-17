@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer')
-const { credentials } = require('./keys')['MONGO_URI']
+const { credentials } = require('./keys')['credentials']
 const transporter = nodemailer.createTransport({
  host: 'smtp.gmail.com',
  port: 465,
