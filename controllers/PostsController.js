@@ -9,7 +9,7 @@ const PostController = {
       }
       req.body.role = 'post';
    try {
-     const post = await Post.create({ namepost , userId: req.user._id})
+     const post = await Post.create({ namepost})
      res.status(201).send(post)
    } catch (error) {
      console.error(error)

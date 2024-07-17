@@ -17,4 +17,18 @@ const authentication = async (req, res, next) => {
    return res.status(500).send({ error, message: 'Ha habido un problema con el token' })
  }
 }
-module.exports = { authentication }
+ const isAuthor = async (req, res, next) => {
+  try {
+    const post = await Post.findById(req.params._id)
+    if (post.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).send({ message: 'Este post no es tuyo' })
+    }
+    next()
+  } catch (error) {
+    console.error(error)
+    return res.status(500).send({ error, message: 'Ha habido un problema al comprobar la autoría del post'})
+  }
+ }
+
+ 
+module.exports = { authentication, isAuthor }
