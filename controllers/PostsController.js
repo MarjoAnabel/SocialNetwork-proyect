@@ -2,22 +2,22 @@ const Post = require('../models/Post')
 
 const PostController = {
   
- async create(req, res) {
-  const { namepost} = req.body;
-      if (!namepost) {
-          return res.status(400).send('Error: Falta algún campo por rellenar');
-      }
-      req.body.role = 'post';
-   try {
-     const post = await Post.create({ namepost})
-     res.status(201).send(post)
-   } catch (error) {
-     console.error(error)
-     res
-       .status(500)
-       .send({ message: 'Ha habido un problema al crear el post' })
-   }
- },
+  async create(req, res) {
+    const { namepost } = req.body;
+    const userId = req.user._id; // Asegúrate de que req.user esté disponible
+    if (!namepost || !userId) {
+      return res.status(400).send('Error: Falta algún campo por rellenar');
+    }
+  
+    try {
+      const post = await Post.create({ namepost, userId });
+      res.status(201).send(post);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: 'Ha habido un problema al crear el post' });
+    }
+  },
+  
 
  async update(req, res) {
   try {

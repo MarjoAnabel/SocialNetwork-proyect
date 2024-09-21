@@ -7,7 +7,7 @@ const User = require('../models/User')
 
 router.post('/', UserController.register)
 router.post('/login', UserController.login)
-router.get('/confirm/:emailToken', UserController.confirm)
+// router.get('/confirm/:emailToken', UserController.confirm)
 router.get ('/info',authentication,UserController.getInfo)
 router.post ('/',authentication,UserController.update)
 router.get ('/name/:name',UserController.getUsersByName)

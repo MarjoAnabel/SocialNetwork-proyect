@@ -2,7 +2,7 @@ const User = require('../models/User.js')
 const jwt = require('jsonwebtoken')
 const transporter = require ('../config/nodemailer')
 const bcryptj = require('bcryptjs')
-const { jwt_secret } = require('../config/keys.js')
+
 
 const UserController = {
   async register(req, res, next) {
@@ -14,7 +14,7 @@ const UserController = {
         password: passwordHash,
         confirmed: false,
       });
-      const emailToken = jwt.sign({ email: req.body.email }, jwt_secret, { expiresIn: '48h' })
+      const emailToken = jwt.sign({ email: req.body.email }, process.env.JWT_SECRET, { expiresIn: '48h' })
       const url = `http://localhost:3001/users/confirm/${emailToken}`
       await transporter.sendMail({
         to: req.body.email,
@@ -32,23 +32,23 @@ const UserController = {
     }
   },
 
-  async confirm(req, res) {
-    try {
-      const token = req.params.emailToken
-      const payload = jwt.verify(token, jwt_secret) 
-      await User.update(
-        { confirmed: true },
-        {
-          where: {
-            email: payload.email,
-          },
-        }
-      )
-      res.status(201).send('Usuario confirmado con éxito')
-    } catch (error) {
-      console.error(error)
-    }
-  },
+  // async confirm(req, res) {
+  //   try {
+  //     const token = req.params.emailToken
+  //     const payload = jwt.verify(token, process.env.JWT_SECRET) 
+  //     await User.update(
+  //       { confirmed: true },
+  //       {
+  //         where: {
+  //           email: payload.email,
+  //         },
+  //       }
+  //     )
+  //     res.status(201).send('Usuario confirmado con éxito')
+  //   } catch (error) {
+  //     console.error(error)
+  //   }
+  // },
  
 
 
@@ -63,15 +63,16 @@ const UserController = {
     if (!isPasswordValid) {
         return res.status(400).send('Error: Contraseña incorrecta');
     }
-    if (!user.confirmed) {
-      return res.status(400).send({ message: 'Debes confirmar tu correo' })
-    }
+    // if (!user.confirmed) {
+    //   return res.status(400).send({ message: 'Debes confirmar tu correo' })
+    // }
 
-    const token = jwt.sign({ _id: user._id }, jwt_secret);
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
     if (user.tokens.length > 4) user.tokens.shift();
     user.tokens.push(token);
     await user.save();
-    res.send({ message: 'Bienvenid@ ' + user.name, token });
+    console.log (user)
+    res.send({ message: `Inicio de sesión exitoso ${user.name}` , user, token });
 } catch (error) {
     console.error(error);
     res.status(500).send('Error: Ha ocurrido un error al iniciar sesión');

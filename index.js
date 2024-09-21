@@ -1,14 +1,20 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
+const cors = require('cors')
 app.use(express.json())
 const { typeError }= require('./middlewares/errors')
 const { dbConnection } = require('./config/config')
-require('dotenv').config()
 const swaggerUI = require('swagger-ui-express')
 const docs = require('./docs/index')
 
+
 app.use(express.json())
 dbConnection()
+
+
+app.use(cors())
+
 
 app.use ('/posts', require('./routes/posts'))
 app.use ('/comments', require ('./routes/comments'))
