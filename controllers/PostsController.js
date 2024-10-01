@@ -4,7 +4,7 @@ const PostController = {
   
   async create(req, res) {
     const { namepost } = req.body;
-    const userId = req.user._id; // Asegúrate de que req.user esté disponible
+    const userId = req.user._id; 
     if (!namepost || !userId) {
       return res.status(400).send('Error: Falta algún campo por rellenar');
     }
@@ -48,7 +48,7 @@ async insertComment(req, res) {
 async like(req, res) {
   try {
     const post = await Post.findByIdAndUpdate(
-    req.params._id, { $push: { likes: req.user._id } },{ new: true })
+    req.params._id, { $push: { likes: req.user_id } },{ new: true })
     res.send(post)
   } catch (error) {
     console.error(error)
@@ -110,13 +110,14 @@ async getAllPages(req, res) {
   }
 },
 
- async getPostsByName(req, res) {
+async getPostsByName(req, res) {
   try {
-    const name = new RegExp(req.params.name, 'i')
-    const posts = await Post.find({ name })
-    res.send(posts)
+    const postName = new RegExp(req.params.postName, 'i'); // Crear regex para búsqueda case insensitive
+    const posts = await Post.find({ name: postName }); // Asegúrate de que estás buscando en el campo correcto
+    res.send(posts); // Debería devolver un array (puede estar vacío)
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    res.status(500).send({ message: 'Error al buscar los posts' });
   }
 },
 
